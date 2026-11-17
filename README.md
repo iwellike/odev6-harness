@@ -136,6 +136,16 @@ Hata varsa kısa mesajı **stderr**'e yazar ve **2** ile çıkar. Her çalışma
 
 Aynı ham prompt ayrı bir ön denemede (A0) de verildi. İlk turda yine Python ve `> SINIR` yazdı (71.338 token, 3 araç, 28,2 s). Yani hatalar tesadüf değil, tekrarlanabilir (`kanit/A_on_deneme/`).
 
+### Ödevin A koşusu için sorduğu üç soru
+
+| Soru | Alt ajan A koşusu (`kanit/A/`) | `claude -p` A koşusu (`kanit/claude_p/A/`) |
+|---|---|---|
+| Sınırda `>= 3` mü yazdı, `> 3` mü? | Tur 1: `> SINIR` (%30), tam 3 GEÇTİ sayıldı. Tur 2-3: kaldı için `>`; riskli eşiği kendiliğinden %20'ye çekildi. Tur 4: `>= 3`, ama ancak açıkça söylenince. | Tur 1: kod yazmadı, veri dosyası istedi. Tur 2-3: `oran > 0.30` (float), riskli `>= 0.20`. Tur 4: `>= 3`, açıkça söylenince. |
+| Metotları nasıl tanımladı? Monkey patch / `method_missing` var mı? | Hiçbir turda monkey patch ya da `method_missing` yok. Tur 3: elle `def aktif? = …`. Tur 4: `define_method`, istenince. | Hiçbir turda monkey patch ya da `method_missing` yok. Tur 3: elle `def aktif?`. Tur 4: `define_method`, istenince. |
+| Hangi Ruby sözdizimini kullandı, kaç tur attı? | Tur 1 Python. Tur 2 `Struct` + String durum. Tur 3-4 tek satırlık metot (`def x? = …`, Ruby 3.0+), konumsal argümanlar. 3.4'e özgü `it` kullanılmadı. 4 insan turu, 22 araç çağrısı. | Tur 2 Hash + String durum. Tur 3-4 sınıf + keyword argüman. `it` kullanılmadı. 4 insan turu, `num_turns` toplamı 23. |
+
+Kanıt: `kanit/A/tur*/`, `kanit/claude_p/A/tur*_kod/` (ajanın yazdığı dosyalar, değiştirilmeden).
+
 ### Sorulara cevaplar
 
 **Tur sayısı kaçtan kaça düştü?** İnsan turu 4 → 1; ajan içi araç çağrısı 22 → 2–4. B'de ajan dosyaları yazdı, `bin/kontrol`'ü çalıştırdı, ilk seferde yeşil gördü ve bitirdi.
