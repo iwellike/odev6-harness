@@ -121,7 +121,7 @@ Kontrol için aynı ham prompt ayrı bir ön denemede (A0) de verildi; ilk turda
 | `kanit/A/kosu_A.md` | A koşusunun promptları, tur tur ölçümler, ajanın kendi itirafları |
 | `kanit/A/tur1…tur4/` | Ajanın her turda yazdığı dosyalar (değiştirilmeden) ve çıktıları |
 | `kanit/A_on_deneme/` | A0 ön denemesi: aynı hataların tekrarı |
-| `kanit/B/kosu1/`, `kanit/B/kosu2/` | B koşularında ajanın yazdığı `lib/` ve `bin/kontrol` günlüğü |
+| `kanit/B/kosu1/`, `kanit/B/kosu2/` | B koşularında ajanın yazdığı `lib/` ve `bin/kontrol` günlüğü (kosu1 günlüğündeki 2. satır, 19:24:27, ajanın değil benim doğrulama çalıştırmamdır) |
 | `kanit/metrikler.json` | Tüm sayılar |
 | `kanit/sensor_dogrulama.txt`, `kanit/mutasyon.sh` | 12 mutasyon → 12 yakalama |
 | `kanit/kanca_simulasyonu.txt` | `PostToolUse` kancasının çıkış 0 / 2 davranışı |
