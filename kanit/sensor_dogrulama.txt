@@ -1,0 +1,72 @@
+### M0 — Değiştirilmemiş kod (kontrol grubu)
+KONTROL OK: 18 runs, 70 assertions, 0 failures, 0 errors, 0 skips
+çıkış kodu: 0
+
+### M1 — riskli '>= 3' yerine '> 3' (A tur1 sınır hatası)
+lib/devamsizlik_kontrol.rb:4:    riskli: ->(o) { o.devamsizlik > 3 },
+KONTROL HATA: riskli kuralı '>= 3' olmalı, '> 3' değil
+çıkış kodu: 2
+
+### M2 — float/yüzde ile '> %30' (A tur1-2 hatası; grep'e takılmayan biçim)
+  1) Failure:
+Expected: [:riskli]
+  2) Failure:
+Expected [] to include :riskli.
+KONTROL HATA: Minitest kırmızı
+çıkış kodu: 2
+
+### M3 — riskli'yi kendisi %20'ye çekti (A tur2-3: 2 devamsızlık riskli)
+  1) Failure:
+Expected: []
+  2) Failure:
+Expected [:riskli] to be empty.
+KONTROL HATA: Minitest kırmızı
+çıkış kodu: 2
+
+### M4 — riskli/kaldi ayrık (A tur3: 4 devamsızlık riskli değil)
+  1) Failure:
+Expected: [:riskli, :kaldi]
+  2) Failure:
+Expected: [:riskli, :kaldi]
+  3) Failure:
+Expected: [:riskli, :kaldi]
+çıkış kodu: 2
+
+### M5 — define_method yerine method_missing (dersteki tuzak, önleyici)
+lib/ogrenci.rb:17:  def method_missing(ad, *args)
+KONTROL HATA: method_missing yasak
+çıkış kodu: 2
+
+### M6 — Integer'a monkey patch (dersteki tuzak, önleyici)
+lib/devamsizlik_kontrol.rb:13:class Integer
+KONTROL HATA: standart sınıfa monkey patch yasak
+çıkış kodu: 2
+
+### M7 — DevamsizlikKontrol module (B koşusu-1 hatası)
+  1) Failure:
+Expected DevamsizlikKontrol to be an instance of Class, not Module.
+KONTROL HATA: Minitest kırmızı
+çıkış kodu: 2
+
+### M8 — Devamsızlık üst sınırı yok (A tur3: 11 kabul ediliyor)
+  1) Failure:
+KONTROL HATA: Minitest kırmızı
+çıkış kodu: 2
+
+### M9 — Durum String kabul ediliyor (A tur2)
+  1) Failure:
+KONTROL HATA: Minitest kırmızı
+çıkış kodu: 2
+
+### M10 — Yanlış Ruby sürümü (.ruby-version 3.3; A tur4 ortam hatası)
+KONTROL HATA: Ruby 3.3 gerekli, çalışan: 3.4.6
+çıkış kodu: 2
+
+### M11 — define_method yerine elle def (A tur3)
+KONTROL HATA: durum sorguları define_method ile üretilmeli
+çıkış kodu: 2
+
+### M12 — Ruby yerine Python (A tur1)
+KONTROL HATA: lib/ogrenci.rb eksik
+çıkış kodu: 2
+

@@ -1,0 +1,8 @@
+$ echo {"tool_name":"Write",...} | CLAUDE_PROJECT_DIR=$PWD sh -c "\"$CLAUDE_PROJECT_DIR\"/bin/kontrol"   # .claude/settings.json içindeki PostToolUse komutu
+KONTROL OK: 18 runs, 70 assertions, 0 failures, 0 errors, 0 skips
+çıkış kodu: 0
+
+# Bozuk kodla (riskli > 3) aynı kanca:
+lib/devamsizlik_kontrol.rb:4:    riskli: ->(o) { o.devamsizlik > 3 },
+KONTROL HATA: riskli kuralı '>= 3' olmalı, '> 3' değil
+çıkış kodu: 2 (2 = Claude Code stderr'i ajana geri verir)

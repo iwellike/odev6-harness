@@ -1,0 +1,5 @@
+RISKLI:
+  Ayse     3/10 (%30)
+KALDI:
+  Mehmet   4/10 (%40)
+  Elif     7/10 (%70)

@@ -1,0 +1,59 @@
+{
+  "kaynak": "Claude Code Agent aracının her oturum sonunda verdiği <usage> bloğu: subagent_tokens, tool_uses, duration_ms",
+  "A": [
+    {
+      "tur": 1,
+      "subagent_tokens": 71666,
+      "tool_uses": 3,
+      "duration_ms": 31370,
+      "kalan_sartname_hatasi": 10
+    },
+    {
+      "tur": 2,
+      "subagent_tokens": 72958,
+      "tool_uses": 4,
+      "duration_ms": 24248,
+      "kalan_sartname_hatasi": 9
+    },
+    {
+      "tur": 3,
+      "subagent_tokens": 76925,
+      "tool_uses": 7,
+      "duration_ms": 62176,
+      "kalan_sartname_hatasi": 7
+    },
+    {
+      "tur": 4,
+      "subagent_tokens": 81560,
+      "tool_uses": 8,
+      "duration_ms": 67059,
+      "kalan_sartname_hatasi": 0
+    }
+  ],
+  "A_on_deneme_tur1": {
+    "subagent_tokens": 71338,
+    "tool_uses": 3,
+    "duration_ms": 28163
+  },
+  "B_kosu1": {
+    "tur": 1,
+    "subagent_tokens": 76098,
+    "tool_uses": 2,
+    "duration_ms": 17885,
+    "kalan_sartname_hatasi": 1,
+    "not_": "DevamsizlikKontrol module yazıldı -> ratchet"
+  },
+  "B_kosu2": {
+    "tur": 1,
+    "subagent_tokens": 77218,
+    "tool_uses": 4,
+    "duration_ms": 21822,
+    "kalan_sartname_hatasi": 0
+  },
+  "A_toplam": {
+    "insan_turu": 4,
+    "subagent_tokens": 303109,
+    "tool_uses": 22,
+    "duration_ms": 184853
+  }
+}

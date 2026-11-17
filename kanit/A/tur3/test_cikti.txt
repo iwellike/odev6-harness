@@ -1,0 +1,3 @@
+Finished in 0.001140s, 8772.2607 runs/s, 28948.4603 assertions/s.
+
+10 runs, 33 assertions, 0 failures, 0 errors, 0 skips

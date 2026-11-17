@@ -1,0 +1,10 @@
+Ali      aktif        1/10  %10.0   GECTI
+Ayse     aktif        2/10  %20.0   RISKLI
+Mehmet   aktif        3/10  %30.0   RISKLI
+Zeynep   aktif        4/10  %40.0   KALDI
+Can      donduruldu   5/10  %50.0   DEGERLENDIRILMEDI
+Elif     mezun        0/10  %0.0    DEGERLENDIRILMEDI
+
+RISKLI: Ayse, Mehmet
+
+KALDI: Zeynep

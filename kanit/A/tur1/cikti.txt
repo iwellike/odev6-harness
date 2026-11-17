@@ -1,0 +1,4 @@
+Ali      4/14  %28.6  GECTI
+Ayse     5/14  %35.7  KALDI
+Mehmet   0/14  %0.0  GECTI
+Zeynep   3/10  %30.0  GECTI

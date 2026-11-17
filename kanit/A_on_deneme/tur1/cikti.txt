@@ -1,0 +1,4 @@
+Ali      10/42 = % 23.8 -> GECTI
+Ayse     13/42 = % 31.0 -> KALDI
+Mehmet   15/42 = % 35.7 -> KALDI
+Zeynep   12/40 = % 30.0 -> GECTI
