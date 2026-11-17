@@ -60,7 +60,7 @@ Kısa bir "anayasa". Yalnızca ajanın eğitim verisinde olmayan ve şüpheye d�
 - **Yasaklar:** `method_missing`, monkey patch (`refine`/`prepend` dahil), `instance_eval`
 - **Döngü:** testi gevşetme; `bin/kontrol` 0 dönmeden "bitti" deme
 
-İlk madde "Emin olmadığın şeyi farz etme, sor." `map` ve `snake_case` gibi ajanın zaten bildiği şeyler yazılmadı. `ln -s AGENTS.md CLAUDE.md` ile Claude Code da aynı dosyayı okur.
+İlk madde "Emin olmadığın şeyi farz etme, sor." `map` ve `snake_case` gibi ajanın zaten bildiği şeyler yazılmadı. `ln -s AGENTS.md CLAUDE.md` ile Claude Code da aynı dosyayı okur. **Windows notu:** Git'te `CLAUDE.md` gerçek bir sembolik bağ olarak kayıtlı (mod `120000`, hedef `AGENTS.md`; kontrol: `git ls-files -s CLAUDE.md`). Windows'ta `core.symlinks` kapalıysa dosya içinde yalnızca `AGENTS.md` yazan düz bir metin gibi görünür. Bu normaldir, dosyayı değiştirmeyin.
 
 ### 2. Sensör — `test/ogrenci_test.rb`
 Testler koddan **önce** yazıldı; B koşularında ajan boş bir `lib/` ile başladı. Sınır taraması 0'dan 10'a kadar her devamsızlık değerini tek tek doğrular.
