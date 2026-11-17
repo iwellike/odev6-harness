@@ -22,3 +22,6 @@
 ## Otomatik kanca çalışması
 
 B koşusunda, tek insan turu içinde `bin/kontrol` kancası **3** kez otomatik çalıştı (kaynak: `kanit/claude_p/B/kontrol.log`).
+
+---
+**Sonradan eklenen not:** "3 kez otomatik" sayısı `kontrol.log` satır sayısıdır. Bu sürümdeki `bin/kontrol` çalıştıranı (kanca / elle) günlüğe yazmadığı için kaçının kanca olduğu kesin değildir; bkz. README "Gerçek Claude Code ölçümü".

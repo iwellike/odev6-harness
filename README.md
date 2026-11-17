@@ -171,13 +171,15 @@ Yukarıdaki A/B koşuları alt ajan (`Agent`/Task aracı) ile ölçüldü; `<usa
 
 > `total_cost_usd`, bu ortamda Claude Pro aboneliği üzerinden çalıştırıldığı için **API karşılığı maliyet tahminidir** — gerçek Pro faturasına ek ücret yansımaz, yalnızca göreli karşılaştırma için kullanılabilir.
 
-**Otomatik kanca çalışması (çözüldü):** B'nin tek insan turu içinde `bin/kontrol`, ajan hiçbir elle komut vermeden **3 kez otomatik** çalıştı — `.claude/settings.json`'daki `PostToolUse` kancası Windows'ta da tetiklendi (`kanit/claude_p/B/kontrol.log`):
+**Kanca canlı tetiklendi (büyük ölçüde çözüldü):** B'nin tek insan turu sırasında `kanit/claude_p/B/kontrol.log`'a 3 kayıt düştü. İlki (20:03:24, `HATA lib/devamsizlik_kontrol.rb eksik`) ajan ilk dosyayı yazdığı anda oluştu, iki saniye sonra ikinci dosyayla `OK` geldi. Bu sıra, `.claude/settings.json`'daki `PostToolUse` kancasının Windows + Git Bash'te Write sonrası kendiliğinden çalıştığını gösteriyor. Ancak bu sürümdeki `bin/kontrol` günlüğe çalıştıranı (kanca / elle) yazmadığı için, AGENTS.md "her kayıttan sonra `bin/kontrol` çalıştır" dediğinden, kayıtların hangisinin kanca, hangisinin ajanın elle çalıştırması olduğu kesin olarak ayrılamıyor:
 ```
 2026-11-17 20:03:24 HATA lib/devamsizlik_kontrol.rb eksik
 2026-11-17 20:03:26 OK 18 runs, 71 assertions, 0 failures, 0 errors, 0 skips
 2026-11-17 20:03:30 OK 18 runs, 71 assertions, 0 failures, 0 errors, 0 skips
 ```
-Son satırdan sonra ayrıca benim yaptığım tek bir manuel doğrulama çalıştırması var (`kanit/claude_p/B/son_kontrol.txt`, çıkış: 0 — bu satır yukarıdaki sayıma dahil değil).
+Bu üç kaydın ardından ayrıca benim yaptığım tek bir manuel doğrulama çalıştırması var (`kanit/claude_p/B/son_kontrol.txt`, çıkış: 0; yukarıdaki üç kayda dahil değil).
+
+**Koşu farkı:** Bu `claude -p` koşusunda B klasörüne `AGENTS.md` kopyalandı ama `CLAUDE.md` sembolik bağı kopyalanmadı ve rehber prompta da eklenmedi. Ajan klasördeki `AGENTS.md`'yi kendisi bulup okudu; son raporunda "AGENTS.md bunu açıkça istiyor" diyor (`kanit/claude_p/B/b.json`, `result` alanı). Yani rehber otomatik yüklenmedi, ajan tarafından keşfedildi.
 
 **Bu A koşusunda gözlenen hatalar (RATCHET_LOG.md ile karşılaştırma):**
 
@@ -188,7 +190,7 @@ Son satırdan sonra ayrıca benim yaptığım tek bir manuel doğrulama çalış
 | A3 | Durum sorgularını elle `def` yazdı (`define_method` yok); float/oran karşılaştırması sürdü; devamsızlığın üst sınırı/tip doğrulaması yok, alan adı `devamsiz`; riskli/kaldı duruma bakıyor (`aktif?` şartı) | #7, #3, #8, #11 | `kanit/claude_p/A/tur3_kod/lib/ogrenci.rb`, `lib/devamsizlik_kontrol.rb:16-27` |
 | A4 | `define_method` bu kez doğru kullanıldı ve riskli/kaldı ayrık değil doğru test edildi (#7, #5 bu turda **karşılandı**); ama riskli/kaldı hâlâ `aktif?` şartına bakıyor ve `devamsiz` hâlâ 0..10 doğrulaması/üst sınırı yok, alan adı hâlâ `devamsiz` | #11, #8 | `kanit/claude_p/A/tur4_kod/lib/devamsizlik_kontrol.rb:18,22`, `lib/ogrenci.rb` |
 
-Yeni bir hata **kategorisi** çıkmadı — dördü de RATCHET_LOG.md'deki mevcut 12 maddeyle örtüşüyor (farklı sayılarla/detaylarla tekrar etti). A4'te `define_method` ve ayrık-olmayan kurallar bu kez ilk seferde doğru geldi (muhtemelen tur 4 promptunun bunu açıkça istemesinden); buna karşın `aktif?` filtresi (#11) ve devamsızlık doğrulaması (#8) şartname AGENTS.md olarak yazılı olmadığı için A'da hiç düzelmedi — tam da B'nin bir rehberle önlediği şey.
+Yeni bir hata **kategorisi** çıkmadı; dördü de RATCHET_LOG.md'deki mevcut 12 maddeyle örtüşüyor. A4'te `define_method` ve ayrık olmayan kurallar doğru geldi, çünkü tur 4 promptu bunları açıkça istedi. `aktif?` filtresi (#11) ve 0..10 doğrulaması / `devamsizlik` adı (#8) ise A'da hiç düzelmedi. Not: bu koşudaki tur 4 promptunda, ilk A koşusundaki "Özellik adı devamsizlik olsun ve 0..10 aralığında olsun" ve "%20 eşiğini kaldır" cümleleri yoktu (`kanit/claude_p/olc.sh`, `T4`). #8'in düzelmemesinin bir nedeni de bu; iki A koşusunun 4. turu birebir aynı değildir. B'de ise bu kuralların hepsi rehberde ve testte yazılı olduğu için ilk turda karşılandı.
 
 ## Kanıtlar (`kanit/`)
 
@@ -212,9 +214,9 @@ Yeni bir hata **kategorisi** çıkmadı — dördü de RATCHET_LOG.md'deki mevcu
 ## Yapamadıklarım
 
 - **Token ayrımı ve `$` maliyeti — ÇÖZÜLDÜ.** Slayt 13'teki `claude -p … --output-format json` ile `input_tokens`, `output_tokens`, `cache_read_input_tokens` ayrımını ve `total_cost_usd`'yi almak istiyordum; önceki denemede CLI kimlik doğrulaması olmadığı için çalışmamıştı. Bu kez `kanit/claude_p/olc.sh` ile gerçek bir Claude Code oturumunda (`--resume` ile 4 turluk A, tek turluk B) çalıştırıldı ve tüm ayrım `kanit/claude_p/ozet.md`'de var (bkz. yukarıdaki "Gerçek Claude Code ölçümü" alt başlığı). `total_cost_usd` yine de Pro abonelikte gerçek bir ek ücrete karşılık gelmiyor, yalnızca API karşılığı tahmin.
-- **Kanca B'de kendiliğinden tetiklenmedi — ÇÖZÜLDÜ.** Önceki B koşuları (B-1/2/3) alt ajan olarak çalıştığı için `.claude/settings.json` kancası devreye girmiyordu. Gerçek `claude -p` koşusunda B klasörüne `.claude/settings.json` + `bin/kontrol` kopyalandı ve kanca **hiç elle müdahale olmadan 3 kez otomatik çalıştı** (`kanit/claude_p/B/kontrol.log`): önce eksik dosya yüzünden 1 kez HATA (çıkış 2), ardından 2 kez OK. Windows + Git Bash'te `PostToolUse` kancasının gerçekten tetiklendiği artık doğrulanmış durumda.
-- **B'de rehber prompta eklendi.** Claude Code'un CLAUDE.md'yi otomatik yüklemesini taklit etmek için AGENTS.md içeriği bağlam olarak eklendi; gerçek bir Claude Code oturumunda ayrıca denenmedi.
-- **Az örneklem.** A bir kez (artı A0 ön denemesi), B üç kez ölçüldü. Sayılar yön gösterir; istatistiksel ortalama değildir.
+- **Kanca B'de kendiliğinden tetiklenmedi: büyük ölçüde çözüldü.** Alt ajan koşularında (B-1/2/3) `.claude/settings.json` kancası devreye girmiyordu. Gerçek `claude -p` koşusunda kancanın Windows + Git Bash'te Write sonrası tetiklendiği günlükteki kayıt sırasından görülüyor (ilk dosyadan hemen sonra `HATA … eksik`, sonra `OK`). Kalan eksik: bu sürümdeki `bin/kontrol` günlüğe kaynağı (kanca / elle) yazmıyor; 3 kaydın kaçının kanca olduğu kesin ayrılamıyor.
+- **CLAUDE.md otomatik yüklemesi denenmedi.** Alt ajan koşularında (B-1/2/3) AGENTS.md içeriği prompta eklendi. Gerçek `claude -p` koşusunda prompta eklenmedi, ama `CLAUDE.md` bağı da B klasörüne kopyalanmadı; ajan `AGENTS.md`'yi kendisi bulup okudu. CLAUDE.md'nin otomatik yüklendiği bir koşu yapılmadı.
+- **Az örneklem.** A iki kez ölçüldü (alt ajan + `claude -p`, artı A0 ön denemesi), B dört kez (alt ajan B-1/2/3 + `claude -p`). Sayılar yön gösterir; istatistiksel ortalama değildir.
 - **Tek ajan ailesi.** Yalnızca Claude ile denendi; Cursor, ChatGPT veya Gemini CLI ile karşılaştırma yapılmadı.
 - **RuboCop yok.** Slayt 3'teki kod stili sensörü harici gem gerektirdiği için eklenmedi; yerine `ruby -wc` uyarı kontrolü kondu.
 - **Ruby 3.4 başta yoktu.** A koşusunda ajan ortamda yalnızca 3.1–3.3 buldu ve 3.3.6 ile test etti. Ruby 3.4.6 sonradan kuruldu; B koşuları ve bütün son testler 3.4.6 ile çalıştı.
