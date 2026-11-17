@@ -154,6 +154,42 @@ Sensörün gerçekten yakalayabildiğini mutasyon testiyle ayrıca kanıtladım:
 
 **Hangi ratchet kuralı hatayı anında kilitledi?** B-1'de ajan `DevamsizlikKontrol`'ü `module` yazdı. Sözleşmede "class" yazmadığı için testler geçti; bu bir **harness hatasıydı** ("aynı hata ikinci kez olursa harness'ın hatasıdır"). AGENTS.md'ye "module DEĞİL" satırı, teste `assert_instance_of Class` eklendi. B-2 sıfırdan koştu ve `class` yazdı. B-3'te ajan, sözleşmede olmayan `ad` doğrulamasını farz etmek yerine sordu; "farz etme, sor" maddesi işledi.
 
+### Gerçek Claude Code ölçümü (`claude -p --output-format json`)
+
+Yukarıdaki A/B koşuları alt ajan (`Agent`/Task aracı) ile ölçüldü; `<usage>` bloğu `subagent_tokens` tek bir toplam veriyor, girdi/çıktı/önbellek ayrımı ve dolar maliyeti yoktu (aşağıdaki "Yapamadıklarım" bölümünde bu bir eksiklik olarak işaretlenmişti). Bunu kapatmak için gerçek Claude Code CLI'ı (`claude -p --output-format json`) `kanit/claude_p/olc.sh` betiğiyle uçtan uca çalıştırdım: **A** tamamen boş, kancasız bir klasörde aynı oturumda (`--resume`) 4 ardışık insan turu; **B** `AGENTS.md` + `.claude/settings.json` (`PostToolUse` → `bin/kontrol`) + hazır `test/ogrenci_test.rb` kopyalanmış bir klasörde **tek** insan turu. Görev cümlesi her ikisinde de birebir A tur 1 ile aynı. Ham JSON çıktıları `kanit/claude_p/A/tur1..4.json` ve `kanit/claude_p/B/b.json`; tam tablo `kanit/claude_p/ozet.md`.
+
+| Tur | num_turns | input | cache_read | cache_creation | output | total_cost_usd | is_error |
+|---|---:|---:|---:|---:|---:|---:|---|
+| A1 | 2 | 4 | 20.984 | 45.655 | 229 | 0,283672 | false |
+| A2 | 3 | 6 | 103.032 | 8.477 | 2.265 | 0,115765 | false |
+| A3 | 9 | 18 | 404.854 | 16.875 | 6.422 | 0,319090 | false |
+| A4 | 9 | 18 | 479.886 | 34.812 | 7.801 | 0,469907 | false |
+| **A toplam** | **23** | **46** | **1.008.756** | **105.819** | **16.717** | **1,188434** | |
+| **B** | **11** | **14** | **254.907** | **37.577** | **3.442** | **0,353606** | false |
+
+**A toplam → B farkı:** num_turns −12 (−%52,2) · input −32 (−%69,6) · cache_read −753.849 (−%74,7) · output −13.275 (−%79,4) · total_cost_usd −0,834828 (−%70,2).
+
+> `total_cost_usd`, bu ortamda Claude Pro aboneliği üzerinden çalıştırıldığı için **API karşılığı maliyet tahminidir** — gerçek Pro faturasına ek ücret yansımaz, yalnızca göreli karşılaştırma için kullanılabilir.
+
+**Otomatik kanca çalışması (çözüldü):** B'nin tek insan turu içinde `bin/kontrol`, ajan hiçbir elle komut vermeden **3 kez otomatik** çalıştı — `.claude/settings.json`'daki `PostToolUse` kancası Windows'ta da tetiklendi (`kanit/claude_p/B/kontrol.log`):
+```
+2026-11-17 20:03:24 HATA lib/devamsizlik_kontrol.rb eksik
+2026-11-17 20:03:26 OK 18 runs, 71 assertions, 0 failures, 0 errors, 0 skips
+2026-11-17 20:03:30 OK 18 runs, 71 assertions, 0 failures, 0 errors, 0 skips
+```
+Son satırdan sonra ayrıca benim yaptığım tek bir manuel doğrulama çalıştırması var (`kanit/claude_p/B/son_kontrol.txt`, çıkış: 0 — bu satır yukarıdaki sayıma dahil değil).
+
+**Bu A koşusunda gözlenen hatalar (RATCHET_LOG.md ile karşılaştırma):**
+
+| Tur | Gözlenen | RATCHET eşleşmesi | Kanıt |
+|---|---|---|---|
+| A1 | Kod yazmadan devamsızlık verisini içeren dosyayı istedi (hata değil; AGENTS.md olmadan da "farz etme, sor" tipi bir davranış) | — (yeni davranış, hata değil) | `kanit/claude_p/A/tur1.json` (`result` alanı) |
+| A2 | `Hash` + String durum (`"aktif"`); oranı float/yüzde ile karşılaştırdı; riskli eşiğini kendi uydurdu (`oran >= 0.20`) | #6, #3, #4 | `kanit/claude_p/A/tur2_kod/devamsizlik.rb:13,15` |
+| A3 | Durum sorgularını elle `def` yazdı (`define_method` yok); float/oran karşılaştırması sürdü; devamsızlığın üst sınırı/tip doğrulaması yok, alan adı `devamsiz`; riskli/kaldı duruma bakıyor (`aktif?` şartı) | #7, #3, #8, #11 | `kanit/claude_p/A/tur3_kod/lib/ogrenci.rb`, `lib/devamsizlik_kontrol.rb:16-27` |
+| A4 | `define_method` bu kez doğru kullanıldı ve riskli/kaldı ayrık değil doğru test edildi (#7, #5 bu turda **karşılandı**); ama riskli/kaldı hâlâ `aktif?` şartına bakıyor ve `devamsiz` hâlâ 0..10 doğrulaması/üst sınırı yok, alan adı hâlâ `devamsiz` | #11, #8 | `kanit/claude_p/A/tur4_kod/lib/devamsizlik_kontrol.rb:18,22`, `lib/ogrenci.rb` |
+
+Yeni bir hata **kategorisi** çıkmadı — dördü de RATCHET_LOG.md'deki mevcut 12 maddeyle örtüşüyor (farklı sayılarla/detaylarla tekrar etti). A4'te `define_method` ve ayrık-olmayan kurallar bu kez ilk seferde doğru geldi (muhtemelen tur 4 promptunun bunu açıkça istemesinden); buna karşın `aktif?` filtresi (#11) ve devamsızlık doğrulaması (#8) şartname AGENTS.md olarak yazılı olmadığı için A'da hiç düzelmedi — tam da B'nin bir rehberle önlediği şey.
+
 ## Kanıtlar (`kanit/`)
 
 | Yol | İçerik |
@@ -168,11 +204,15 @@ Sensörün gerçekten yakalayabildiğini mutasyon testiyle ayrıca kanıtladım:
 | `kanit/metrikler.json` | Tüm sayılar |
 | `kanit/sensor_dogrulama.txt`, `kanit/mutasyon.sh` | 14 mutasyon → 14 yakalama |
 | `kanit/kanca_simulasyonu.txt` | `PostToolUse` kancasının çıkış 0 / 2 davranışı |
+| `kanit/claude_p/A/tur1..4.json`, `kanit/claude_p/B/b.json` | Gerçek `claude -p --output-format json` çıktıları (num_turns, usage, total_cost_usd) |
+| `kanit/claude_p/A/turN_kod/` | Her A turu sonunda çalışma klasöründeki kod anlık görüntüsü |
+| `kanit/claude_p/B/kontrol.log`, `son_kontrol.txt` | B'de kancanın otomatik çalıştığı satırlar + son manuel doğrulama |
+| `kanit/claude_p/ozet.md` | A/B karşılaştırma tablosu (olc.sh'ın ürettiği ham özet) |
 
 ## Yapamadıklarım
 
-- **Token ayrımı ve `$` maliyeti yok.** Slayt 13'teki `claude -p … --output-format json` ile `input_tokens`, `output_tokens` ve `cache_read` ayrımını almak istedim. Bu ortamdaki Claude Code CLI kimlik doğrulaması olmadığı için çalışmadı (`Authentication error`). Bu yüzden ajan aracının verdiği toplam `subagent_tokens` kullanıldı; girdi/çıktı/önbellek ayrımı ve dolar maliyeti raporlanamadı.
-- **Kanca B'de kendiliğinden tetiklenmedi.** B ajanı alt ajan olarak çalıştığı için projedeki `.claude/settings.json` kancası devreye girmedi. Ajan `bin/kontrol`'ü AGENTS.md kuralı gereği kendisi çalıştırdı. Kancanın davranışı simülasyonla doğrulandı. Ayrıca ajan `bin/kontrol`'ü her dosya kaydından sonra değil, iki dosyayı yazdıktan sonra bir kez çalıştırdı; günlüklerde koşu başına tek satır var.
+- **Token ayrımı ve `$` maliyeti — ÇÖZÜLDÜ.** Slayt 13'teki `claude -p … --output-format json` ile `input_tokens`, `output_tokens`, `cache_read_input_tokens` ayrımını ve `total_cost_usd`'yi almak istiyordum; önceki denemede CLI kimlik doğrulaması olmadığı için çalışmamıştı. Bu kez `kanit/claude_p/olc.sh` ile gerçek bir Claude Code oturumunda (`--resume` ile 4 turluk A, tek turluk B) çalıştırıldı ve tüm ayrım `kanit/claude_p/ozet.md`'de var (bkz. yukarıdaki "Gerçek Claude Code ölçümü" alt başlığı). `total_cost_usd` yine de Pro abonelikte gerçek bir ek ücrete karşılık gelmiyor, yalnızca API karşılığı tahmin.
+- **Kanca B'de kendiliğinden tetiklenmedi — ÇÖZÜLDÜ.** Önceki B koşuları (B-1/2/3) alt ajan olarak çalıştığı için `.claude/settings.json` kancası devreye girmiyordu. Gerçek `claude -p` koşusunda B klasörüne `.claude/settings.json` + `bin/kontrol` kopyalandı ve kanca **hiç elle müdahale olmadan 3 kez otomatik çalıştı** (`kanit/claude_p/B/kontrol.log`): önce eksik dosya yüzünden 1 kez HATA (çıkış 2), ardından 2 kez OK. Windows + Git Bash'te `PostToolUse` kancasının gerçekten tetiklendiği artık doğrulanmış durumda.
 - **B'de rehber prompta eklendi.** Claude Code'un CLAUDE.md'yi otomatik yüklemesini taklit etmek için AGENTS.md içeriği bağlam olarak eklendi; gerçek bir Claude Code oturumunda ayrıca denenmedi.
 - **Az örneklem.** A bir kez (artı A0 ön denemesi), B üç kez ölçüldü. Sayılar yön gösterir; istatistiksel ortalama değildir.
 - **Tek ajan ailesi.** Yalnızca Claude ile denendi; Cursor, ChatGPT veya Gemini CLI ile karşılaştırma yapılmadı.

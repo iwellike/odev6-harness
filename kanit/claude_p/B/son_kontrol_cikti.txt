@@ -1,0 +1,1 @@
+KONTROL OK: 18 runs, 71 assertions, 0 failures, 0 errors, 0 skips

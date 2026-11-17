@@ -1,0 +1,21 @@
+== proje   : /c/Users/MELIKE TIKIR/Desktop/odev6
+== kanıt   : /c/Users/MELIKE TIKIR/Desktop/odev6/kanit/claude_p
+== çalışma : /c/Users/MELIKE TIKIR/odev6_olcum
+
+=== A koşusu başlıyor (boş klasör, kancasız, 4 insan turu) ===
+-- A tur1
+-- A tur2 (resume 4954aa1a-db8c-4d44-9dab-56f2c03d9176)
+-- A tur3 (resume 4954aa1a-db8c-4d44-9dab-56f2c03d9176)
+-- A tur4 (resume 4954aa1a-db8c-4d44-9dab-56f2c03d9176)
+-- A son test çalıştırılıyor
+
+=== B koşusu başlıyor (AGENTS.md + kanca + hazır test, TEK insan turu) ===
+-- B tek tur
+-- B final bin/kontrol doğrulaması (bu manuel çalıştırma otomatik sayıma dahil DEĞİL)
+
+=== ozet.md üretiliyor ===
+
+TAMAMLANDI
+Otomatik kanca çalışma sayısı (B, tek insan turu içinde): 3
+B final bin/kontrol çıkış kodu: 0
+Özet: /c/Users/MELIKE TIKIR/Desktop/odev6/kanit/claude_p/ozet.md

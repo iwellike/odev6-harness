@@ -1,0 +1,10 @@
+Run options: --seed 38313
+
+# Running:
+
+..........
+
+Finished in 0.001169s, 8553.5883 runs/s, 23094.6883 assertions/s.
+
+10 runs, 27 assertions, 0 failures, 0 errors, 0 skips
+çıkış: 0
