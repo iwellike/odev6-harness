@@ -1,5 +1,6 @@
 #!/bin/bash
-# Sensör doğrulama: A koşusunda görülen hataları doğru koda geri sokar, bin/kontrol yakalıyor mu bakar.
+# Sensör doğrulama: koşularda görülen hataları (A: 10, B-1: 1) ve önleyici tuzakları (3) doğru koda geri sokar;
+# bin/kontrol yakalıyor mu bakar. Kullanım: bash kanit/mutasyon.sh
 R=$(cd "$(dirname "$0")/.." && pwd)
 OUT=$R/kanit/sensor_dogrulama.txt
 : > "$OUT"
@@ -49,4 +50,8 @@ calistir M11 "define_method yerine elle def (A tur3)" \
   "sed -i '/DURUMLAR.each do/,/^  end/c\  def aktif? = @durum == :aktif\n  def donduruldu? = @durum == :donduruldu\n  def mezun? = @durum == :mezun' lib/ogrenci.rb"
 calistir M12 "Ruby yerine Python (A tur1)" \
   "rm lib/*.rb && echo 'print(1)' > devamsizlik.py"
+calistir M13 "Donduruldu/mezun öğrenciyi kurallardan çıkarma varsayımı (A tur2-4)" \
+  "sed -i 's/riskli: ->(o) { o.devamsizlik/riskli: ->(o) { o.aktif? \\&\\& o.devamsizlik/; s/kaldi: ->(o) { o.devamsizlik/kaldi: ->(o) { o.aktif? \\&\\& o.devamsizlik/' lib/devamsizlik_kontrol.rb"
+calistir M14 "Integer.prepend ile gizli monkey patch (önleyici)" \
+  "printf 'module Yama\\n  def riskli? = self >= 3\\nend\\nInteger.prepend(Yama)\\n' >> lib/devamsizlik_kontrol.rb"
 cat "$OUT"

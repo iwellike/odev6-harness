@@ -1,5 +1,5 @@
 ### M0 — Değiştirilmemiş kod (kontrol grubu)
-KONTROL OK: 18 runs, 70 assertions, 0 failures, 0 errors, 0 skips
+KONTROL OK: 18 runs, 71 assertions, 0 failures, 0 errors, 0 skips
 çıkış kodu: 0
 
 ### M1 — riskli '>= 3' yerine '> 3' (A tur1 sınır hatası)
@@ -9,9 +9,9 @@ KONTROL HATA: riskli kuralı '>= 3' olmalı, '> 3' değil
 
 ### M2 — float/yüzde ile '> %30' (A tur1-2 hatası; grep'e takılmayan biçim)
   1) Failure:
-Expected: [:riskli]
-  2) Failure:
 Expected [] to include :riskli.
+  2) Failure:
+Expected: [:riskli]
 KONTROL HATA: Minitest kırmızı
 çıkış kodu: 2
 
@@ -68,5 +68,16 @@ KONTROL HATA: durum sorguları define_method ile üretilmeli
 
 ### M12 — Ruby yerine Python (A tur1)
 KONTROL HATA: lib/ogrenci.rb eksik
+çıkış kodu: 2
+
+### M13 — Donduruldu/mezun öğrenciyi kurallardan çıkarma varsayımı (A tur2-4)
+  1) Failure:
+Expected: [:riskli, :kaldi]
+KONTROL HATA: Minitest kırmızı
+çıkış kodu: 2
+
+### M14 — Integer.prepend ile gizli monkey patch (önleyici)
+lib/devamsizlik_kontrol.rb:16:Integer.prepend(Yama)
+KONTROL HATA: standart sınıfa monkey patch yasak
 çıkış kodu: 2
 

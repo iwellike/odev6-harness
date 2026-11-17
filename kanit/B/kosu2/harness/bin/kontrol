@@ -1,0 +1,43 @@
+#!/bin/sh
+# bin/kontrol — doğrulama kancası (sensör).
+# Ajan her dosya kaydında çalıştırır (Claude Code: .claude/settings.json PostToolUse kancası).
+# Hata varsa kısa mesajı stderr'e yazar ve 2 ile çıkar: Claude Code çıkış kodu 2'yi doğrudan ajana geri verir.
+cd "$(dirname "$0")/.." || exit 2
+mkdir -p log
+
+hata() {
+  echo "KONTROL HATA: $1" >&2
+  echo "$(date '+%F %T') HATA $1" >> log/kontrol.log
+  exit 2
+}
+
+# 1) Sürüm: .ruby-version ile çalışan Ruby aynı olmalı
+istenen=$(cat .ruby-version 2>/dev/null) || hata ".ruby-version yok"
+ruby -e "exit RUBY_VERSION.start_with?('$istenen') ? 0 : 1" \
+  || hata "Ruby $istenen gerekli, çalışan: $(ruby -e 'print RUBY_VERSION')"
+
+# 2) Teslim edilecek dosyalar
+for f in lib/ogrenci.rb lib/devamsizlik_kontrol.rb test/ogrenci_test.rb; do
+  [ -f "$f" ] || hata "$f eksik"
+done
+
+# 3) Yasak kalıplar (AGENTS.md > Yasaklar)
+grep -nE 'method_missing|respond_to_missing\?' lib/*.rb >&2 && hata "method_missing yasak"
+grep -nE '^\s*class\s+(Integer|String|Symbol|Date|Time|Array|Hash|Object|Numeric|NilClass)\b' lib/*.rb >&2 \
+  && hata "standart sınıfa monkey patch yasak"
+grep -nE 'instance_eval|class_eval' lib/*.rb >&2 && hata "gizli DSL (instance_eval/class_eval) yasak"
+grep -q 'define_method' lib/ogrenci.rb || hata "durum sorguları define_method ile üretilmeli"
+grep -nE 'devamsizlik\s*>\s*3' lib/*.rb >&2 && hata "riskli kuralı '>= 3' olmalı, '> 3' değil"
+
+# 4) Sözdizimi + uyarılar
+for f in lib/*.rb test/*.rb; do
+  out=$(ruby -wc "$f" 2>&1) || hata "sözdizimi: $out"
+  echo "$out" | grep -q 'warning' && hata "uyarı: $out"
+done
+
+# 5) Minitest sensörü
+ruby test/ogrenci_test.rb >log/son_test.txt 2>&1 || { tail -25 log/son_test.txt >&2; hata "Minitest kırmızı"; }
+
+ozet=$(grep -E '^[0-9]+ runs' log/son_test.txt)
+echo "$(date '+%F %T') OK $ozet" >> log/kontrol.log
+echo "KONTROL OK: $ozet"

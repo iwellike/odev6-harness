@@ -1,0 +1,14 @@
+#!/bin/sh
+# bin/izle — kanca desteği olmayan ajanlar (Cursor, ChatGPT, Gemini CLI vb.) için.
+# lib/ veya test/ altındaki bir .rb dosyasının içeriği değiştiğinde bin/kontrol'ü çalıştırır.
+# POSIX (Linux + macOS). Kullanım: bin/izle &
+cd "$(dirname "$0")/.." || exit 1
+son=""
+while true; do
+  imza=$(cat lib/*.rb test/*.rb 2>/dev/null | cksum)
+  if [ "$imza" != "$son" ]; then
+    son="$imza"
+    bin/kontrol
+  fi
+  sleep 1
+done

@@ -12,7 +12,8 @@ hata() {
 }
 
 # 1) Sürüm: .ruby-version ile çalışan Ruby aynı olmalı
-istenen=$(cat .ruby-version 2>/dev/null) || hata ".ruby-version yok"
+istenen=$(tr -d '[:space:]' < .ruby-version 2>/dev/null)
+[ -n "$istenen" ] || hata ".ruby-version yok veya boş"
 ruby -e "exit RUBY_VERSION.start_with?('$istenen') ? 0 : 1" \
   || hata "Ruby $istenen gerekli, çalışan: $(ruby -e 'print RUBY_VERSION')"
 
@@ -21,13 +22,14 @@ for f in lib/ogrenci.rb lib/devamsizlik_kontrol.rb test/ogrenci_test.rb; do
   [ -f "$f" ] || hata "$f eksik"
 done
 
-# 3) Yasak kalıplar (AGENTS.md > Yasaklar)
-grep -nE 'method_missing|respond_to_missing\?' lib/*.rb >&2 && hata "method_missing yasak"
-grep -nE '^\s*class\s+(Integer|String|Symbol|Date|Time|Array|Hash|Object|Numeric|NilClass)\b' lib/*.rb >&2 \
+# 3) Yasak kalıplar (AGENTS.md > Yasaklar) — yorum satırları hariç
+kod() { grep -nvE '^\s*#' lib/*.rb /dev/null; }
+kod | grep -E 'method_missing|respond_to_missing\?' >&2 && hata "method_missing yasak"
+kod | grep -E ':\s*class\s+(Integer|String|Symbol|Date|Time|Array|Hash|Object|Numeric|NilClass|Kernel)\b|\b(refine|prepend)\b' >&2 \
   && hata "standart sınıfa monkey patch yasak"
-grep -nE 'instance_eval|class_eval' lib/*.rb >&2 && hata "gizli DSL (instance_eval/class_eval) yasak"
-grep -q 'define_method' lib/ogrenci.rb || hata "durum sorguları define_method ile üretilmeli"
-grep -nE 'devamsizlik\s*>\s*3' lib/*.rb >&2 && hata "riskli kuralı '>= 3' olmalı, '> 3' değil"
+kod | grep -E 'instance_eval|class_eval' >&2 && hata "gizli DSL (instance_eval/class_eval) yasak"
+grep -vE '^\s*#' lib/ogrenci.rb | grep -q 'define_method' || hata "durum sorguları define_method ile üretilmeli"
+kod | grep -E 'devamsizlik\s*>\s*3|3\s*<\s*[a-z_.]*devamsizlik' >&2 && hata "riskli kuralı '>= 3' olmalı, '> 3' değil"
 
 # 4) Sözdizimi + uyarılar
 for f in lib/*.rb test/*.rb; do

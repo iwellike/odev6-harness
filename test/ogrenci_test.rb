@@ -39,6 +39,7 @@ class OgrenciTest < Minitest::Test
   def test_method_missing_tanimlanmamis
     assert_equal BasicObject, Ogrenci.instance_method(:method_missing).owner
     refute Ogrenci.private_method_defined?(:respond_to_missing?, false)
+    refute Ogrenci.method_defined?(:respond_to_missing?, false)
   end
 
   def test_standart_siniflara_monkey_patch_yok
