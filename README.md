@@ -30,7 +30,7 @@ Ogrenci.new(ad: "Ali").mezn?                                      # => NoMethodE
 | `lib/ogrenci.rb` | `Ogrenci` sınıfı: `ad`, `durum` (`:aktif`, `:donduruldu`, `:mezun`), `devamsizlik` (0..10). `aktif?` / `donduruldu?` / `mezun?` `define_method` ile üretilir. `method_missing` ve monkey patch yok. |
 | `lib/devamsizlik_kontrol.rb` | `DevamsizlikKontrol` sınıfı: `KURALLAR` Hash'i (sembol → lambda) ve `DevamsizlikKontrol.durum(ogr)` |
 | `test/ogrenci_test.rb` | Minitest sensörü (18 test): sınır taraması 0..10, tam 3, NoMethodError, monkey patch, sözleşme |
-| `AGENTS.md` + `CLAUDE.md → AGENTS.md` (symlink) | Rehber: ajanın anayasası |
+| `AGENTS.md` + `CLAUDE.md` (`@AGENTS.md` import satırı) | Rehber: ajanın anayasası |
 | `bin/kontrol` | Doğrulama kancası (sensör) |
 | `.claude/settings.json` | Claude Code `PostToolUse` kancası: her Write/Edit sonrası `bin/kontrol` |
 | `bin/izle` | Kanca desteği olmayan ajanlar için arka plan izleyici (POSIX) |
@@ -60,7 +60,7 @@ Kısa bir "anayasa". Yalnızca ajanın eğitim verisinde olmayan ve şüpheye d�
 - **Yasaklar:** `method_missing`, monkey patch (`refine`/`prepend` dahil), `instance_eval`
 - **Döngü:** testi gevşetme; `bin/kontrol` 0 dönmeden "bitti" deme
 
-İlk madde "Emin olmadığın şeyi farz etme, sor." `map` ve `snake_case` gibi ajanın zaten bildiği şeyler yazılmadı. `ln -s AGENTS.md CLAUDE.md` ile Claude Code da aynı dosyayı okur.
+İlk madde "Emin olmadığın şeyi farz etme, sor." `map` ve `snake_case` gibi ajanın zaten bildiği şeyler yazılmadı. `ln -s AGENTS.md CLAUDE.md` bu makinede yönetici izni gerektirdiği için gerçek bir symlink oluşturulamadı (`New-Item -ItemType SymbolicLink` → "Administrator privilege required"); bunun yerine dersin kendi önerdiği taşınabilir alternatif kullanıldı: `CLAUDE.md` tek satır `@AGENTS.md` (Claude Code'un gerçek import sözdizimi) içeriyor, böylece Claude Code aynı dosyayı okur.
 
 ### 2. Sensör — `test/ogrenci_test.rb`
 Testler koddan **önce** yazıldı; B koşularında ajan boş bir `lib/` ile başladı. Sınır taraması 0'dan 10'a kadar her devamsızlık değerini tek tek doğrular.
